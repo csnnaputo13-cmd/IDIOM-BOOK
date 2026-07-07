@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>IDIOMS VOL.1</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a2a4a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      padding: 12px;
+      margin: 0;
+      touch-action: manipulation;
+    }
+
+    .book {
+      max-width: 960px;
+      width: 100%;
+      background: #d4c9b8;
+      border-radius: 24px 8px 8px 24px;
+      box-shadow: 0 30px 45px -15px rgba(0,0,0,0.8), 0 0 0 2px #b8a18c inset, 0 0 0 4px #e8ddd0 inset;
+      padding: 18px 18px 18px 28px;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .book::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 16px;
+      bottom: 16px;
+      width: 5px;
+      background: #b8a18c;
+      border-radius: 20px;
+      opacity: 0.4;
+      box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+    }
+
+    .book-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 2px solid #cbb59e;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      color: #2c1f16;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .book-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-family: 'Times New Roman', serif;
+      background: #dccbbc;
+      padding: 0 18px 0 10px;
+      border-radius: 40px;
+      display: inline-block;
+      box-shadow: inset 0 -2px 0 #b8a18c;
+      color: #2c1f16;
+    }
+
+    .page-indicator {
+      background: #dccbbc;
+      padding: 5px 14px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #2f241b;
+      box-shadow: inset 0 1px 4px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .page-content {
+      background: #f5ede4;
+      padding: 12px 12px 10px 12px;
+      border-radius: 12px 4px 4px 12px;
+      box-shadow: inset 0 0 0 1px #e2d0bf, 0 8px 18px rgba(40, 30, 20, 0.15);
+      min-height: 320px;
+      max-height: 520px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.1s;
+      position: relative;
+      touch-action: none;
+    }
+
+    .page-content:active {
+      cursor: grabbing;
+    }
+
+    .page-content::-webkit-scrollbar {
+      width: 4px;
+    }
+    .page-content::-webkit-scrollbar-track {
+      background: #dccbbc;
+      border-radius: 12px;
+    }
+    .page-content::-webkit-scrollbar-thumb {
+      background: #b8a18c;
+      border-radius: 12px;
+    }
+
+    .image-page {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .image-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+      touch-action: none;
+      min-height: 200px;
+    }
+
+    .image-wrapper img {
+      max-width: 100%;
+      max-height: 380px;
+      height: auto;
+      width: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+      border: 1px solid #dac8b8;
+      object-fit: contain;
+      background: #f5ede4;
+      transition: transform 0.1s ease;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      transform-origin: center center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .image-wrapper img:active {
+      cursor: grabbing;
+    }
+
+    .image-page .placeholder {
+      background: #e8ddd0;
+      border-radius: 16px;
+      padding: 30px 16px;
+      text-align: center;
+      color: #5f4a38;
+      font-style: italic;
+      border: 2px dashed #b8a18c;
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    .reviewer-footer {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px solid #dac8b8;
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 0.75rem;
+      color: #3d2d1e;
+      text-align: center;
+      width: 100%;
+      border-radius: 0 0 8px 8px;
+      flex-shrink: 0;
+    }
+
+    .reviewer-footer span {
+      background: #dccbbc;
+      padding: 2px 14px;
+      border-radius: 30px;
+      display: inline-block;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.3);
+    }
+
+    .nav-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      background: #f7d44a;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 60px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a2a4a;
+      box-shadow: 0 4px 0 #c9a820, 0 6px 12px rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: 0.08s linear;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+      border: 1px solid #e8c83a;
+      flex: 1 1 auto;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 44px;
+    }
+
+    .nav-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #c9a820;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.4;
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #c9a820;
+      pointer-events: none;
+    }
+
+    .nav-btn .key-hint {
+      font-size: 0.65rem;
+      background: rgba(26, 42, 74, 0.15);
+      padding: 2px 10px;
+      border-radius: 30px;
+      color: #1a2a4a;
+      margin-left: 4px;
+      white-space: nowrap;
+    }
+
+    .goto-input {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #dccbbc;
+      padding: 3px 10px 3px 14px;
+      border-radius: 60px;
+    }
+
+    .goto-input label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #3d2d1e;
+    }
+
+    .goto-input input {
+      width: 48px;
+      padding: 5px 4px 5px 10px;
+      border: 1px solid #b8a18c;
+      border-radius: 40px;
+      background: #f5ede4;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-align: center;
+      outline: none;
+      min-height: 34px;
+    }
+
+    .goto-input input:focus {
+      border-color: #8b6f58;
+      box-shadow: 0 0 0 2px #dac2ae;
+    }
+
+    .goto-input button {
+      background: #b3927a;
+      border: none;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.1s;
+      box-shadow: 0 2px 0 #6f5845;
+      border: 1px solid #a5856e;
+      min-height: 34px;
+      touch-action: manipulation;
+    }
+
+    .goto-input button:active {
+      transform: translateY(2px);
+      box-shadow: none;
+    }
+
+    .footer-note {
+      text-align: right;
+      font-size: 0.65rem;
+      color: #5f4a38;
+      margin-top: 10px;
+      padding-right: 6px;
+      letter-spacing: 0.5px;
+      border-top: 1px dashed #cbb59e;
+      padding-top: 8px;
+    }
+
+    .footer-note span {
+      background: #dccbbc;
+      padding: 2px 12px;
+      border-radius: 30px;
+    }
+
+    .zoom-hint {
+      font-size: 0.6rem;
+      color: #5f4a38;
+      margin-top: 3px;
+      opacity: 0.7;
+      background: #e8ddd0;
+      padding: 2px 12px;
+      border-radius: 30px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .controls-row button {
+      background: #dccbbc;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: #2c1f16;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #b8a18c;
+      transition: 0.05s linear;
+      border: 1px solid #cbb59e;
+      min-height: 34px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .controls-row button:active {
+      transform: translateY(2px);
+      box-shadow: none;
+    }
+
+    .audio-btn {
+      background: #4a8c6f;
+      border: none;
+      padding: 4px 14px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #2d5a46;
+      transition: 0.05s linear;
+      border: 1px solid #3a7058;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 34px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .audio-btn:active {
+      transform: translateY(2px);
+      box-shadow: none;
+    }
+
+    .audio-btn.playing {
+      background: #c0392b;
+      box-shadow: 0 2px 0 #922b21;
+      border-color: #a93226;
+    }
+
+    .voice-selector {
+      background: #dccbbc;
+      border: 1px solid #b8a18c;
+      border-radius: 30px;
+      padding: 3px 10px;
+      font-size: 0.7rem;
+      color: #2c1f16;
+      outline: none;
+      cursor: pointer;
+      max-width: 140px;
+      min-height: 34px;
+      touch-action: manipulation;
+    }
+
+    .voice-selector:focus {
+      border-color: #8b6f58;
+      box-shadow: 0 0 0 2px #dac2ae;
+    }
+
+    .enter-hint {
+      font-size: 0.55rem;
+      background: rgba(74, 140, 111, 0.25);
+      padding: 1px 8px;
+      border-radius: 30px;
+      color: #2d5a46;
+      margin-left: 4px;
+      white-space: nowrap;
+      border: 1px solid rgba(74, 140, 111, 0.3);
+    }
+
+    .shortcuts-info {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 8px;
+      }
+      .book {
+        padding: 12px 10px 12px 18px;
+        border-radius: 16px 4px 4px 16px;
+      }
+      .book::before {
+        left: 5px;
+        width: 4px;
+      }
+      .page-content {
+        padding: 8px 6px 6px 6px;
+        max-height: 400px;
+        min-height: 240px;
+        border-radius: 8px 2px 2px 8px;
+      }
+      .book-header h1 {
+        font-size: 1.1rem;
+        padding: 0 12px 0 8px;
+        letter-spacing: 2px;
+      }
+      .page-indicator {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+      }
+      .nav-btn {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+        gap: 4px;
+        min-height: 38px;
+      }
+      .nav-btn .key-hint {
+        font-size: 0.55rem;
+        padding: 1px 8px;
+      }
+      .goto-input input {
+        width: 40px;
+        font-size: 0.8rem;
+        padding: 4px 3px 4px 8px;
+        min-height: 30px;
+      }
+      .goto-input button {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        min-height: 30px;
+      }
+      .image-wrapper img {
+        max-height: 280px;
+      }
+      .reviewer-footer {
+        font-size: 0.65rem;
+        margin-top: 6px;
+        padding-top: 4px;
+      }
+      .zoom-hint {
+        font-size: 0.5rem;
+        padding: 1px 10px;
+      }
+      .controls-row button {
+        padding: 3px 10px;
+        font-size: 0.65rem;
+        min-height: 30px;
+      }
+      .audio-btn {
+        padding: 3px 12px;
+        font-size: 0.7rem;
+        min-height: 30px;
+      }
+      .voice-selector {
+        font-size: 0.6rem;
+        max-width: 100px;
+        padding: 2px 6px;
+        min-height: 30px;
+      }
+      .footer-note {
+        font-size: 0.55rem;
+        margin-top: 8px;
+        padding-top: 6px;
+      }
+      .enter-hint {
+        font-size: 0.5rem;
+        padding: 1px 6px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .book {
+        padding: 8px 6px 8px 12px;
+      }
+      .page-content {
+        max-height: 340px;
+        min-height: 200px;
+      }
+      .image-wrapper img {
+        max-height: 220px;
+      }
+      .nav-controls {
+        gap: 6px;
+      }
+      .nav-btn {
+        font-size: 0.7rem;
+        padding: 5px 10px;
+        min-height: 32px;
+      }
+      .nav-btn .key-hint {
+        display: none;
+      }
+      .controls-row {
+        gap: 4px;
+      }
+      .controls-row button {
+        font-size: 0.6rem;
+        padding: 2px 8px;
+        min-height: 26px;
+      }
+      .audio-btn {
+        font-size: 0.6rem;
+        padding: 2px 10px;
+        min-height: 26px;
+      }
+      .voice-selector {
+        font-size: 0.55rem;
+        max-width: 80px;
+        min-height: 26px;
+        padding: 1px 4px;
+      }
+      .enter-hint {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="book">
+  <div class="book-header">
+    <h1>📖 IDIOMS VOL.1</h1>
+    <div class="page-indicator" id="pageIndicator">1 / 50</div>
+  </div>
+
+  <div class="page-content" id="pageContent">
+    <!-- image + reviewer footer only -->
+  </div>
+
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" aria-label="previous page">◀ PREV <span class="key-hint">←</span></button>
+    <div class="goto-input">
+      <label for="pageJump">Go</label>
+      <input type="number" id="pageJump" min="1" max="50" value="1" />
+      <button id="jumpBtn">GO</button>
+    </div>
+    <button class="nav-btn" id="nextBtn" aria-label="next page">NEXT ▶ <span class="key-hint">→</span></button>
+  </div>
+  <div class="footer-note">
+    <span>✦ tap to zoom · drag to pan · Space/Enter for audio · ← → navigate ✦</span>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ----- list of image filenames -----
+    const imageNames = [
+      "1. A BLESSING IN DISGUISE.png",
+      "2. A DIME A DOZEN.png",
+      "3. A FISH OUT OF WATER.png",
+      "4. A PIECE OF CAKE.png",
+      "5. A SIGHT FOR SORE EYES.png",
+      "6. ADD FUEL TO THE FIRE.png",
+      "7. AGAINST THE CLOCK.png",
+      "8. ALL EARS.png",
+      "9. ALL IN THE SAME BOAT.png",
+      "10. ALL OVER THE PLACE.png",
+      "11. ALL TALK AND NO ACTION.png",
+      "12. AN ARM AND A LEG.png",
+      "13. APPLE OF ONE'S EYE.png",
+      "14. AS COOL AS A CUCUMBER.png",
+      "15. AT THE DROP OF A HAT.png",
+      "16. BACK AGAINST THE WALL.png",
+      "17. BACK TO SQUARE ONE.png",
+      "18. BARKING UP THE WRONG TREE.png",
+      "19. BEAT AROUND THE BUSH.png",
+      "20. BEAT SOMEONE TO THE PUNCH.png",
+      "21. BEND OVER BACKWARDS.png",
+      "22B. BETTER LATE THAN NEVER.png",
+      "23. BETWEEN A ROCK AND A HARD PLACE.png",
+      "24. BEYOND BELIEF.png",
+      "25. BITE OFF MORE THAN YOU CAN CHEW.png",
+      "26. BITE THE BULLET.png",
+      "27. BLOW OFF STEAM.png",
+      "28. BLOW THE WHISTLE.png",
+      "29. BREAK A LEG.png",
+      "30. BREAK EVEN.png",
+      "31. BREAK THE ICE.png",
+      "32. BURN BRIDGES.png",
+      "33. BURN THE CANDLE AT BOTH ENDS.png",
+      "34. BURN THE MIDNIGHT OIL.png",
+      "35. BY HEART.png",
+      "36. CALL IT A DAY.png",
+      "37. CALL THE SHOTS.png",
+      "38. CARRY THE WEIGHT.png",
+      "39. CASH IN ON.png",
+      "40. CATCH SOMEONE RED-HANDED.png",
+      "41. CHANGE OF HEART.png",
+      "42. CHEW THE FAT.png",
+      "43. CLEAN SLATE.png",
+      "44. CLEAR THE AIR.png",
+      "45. CLOSE BUT NO CIGAR.png",
+      "46. COME CLEAN.png",
+      "47. COME RAIN OR SHINE.png",
+      "48. COST AN ARM AND A LEG.png",
+      "49. COUNT ONE'S BLESSING.png",
+      "50. CRY OVER SPILLED MILK.png"
+    ];
+
+    // ----- Text content for audio -----
+    const idiomTexts = [
+      "A blessing in disguise. At first it feels like bad news, but later it turns out to be good news. Not everything bad is really bad. Good things can hide behind tough moments.",
+      "A dime a dozen. Something that is very common and not special. There are so many of them, they are not valuable or unique. Excuses are a dime a dozen.",
+      "A fish out of water. Someone who feels uncomfortable or out of place in a situation. To feel awkward because you are in unfamiliar surroundings.",
+      "A piece of cake. Something is very easy to do or understand. When something is a piece of cake, it means it's easy and no big deal.",
+      "A sight for sore eyes. A very welcome or lovely sight that brings relief and happiness, especially after a difficult time.",
+      "Add fuel to the fire. To make a bad situation worse. To do or say something that makes a bad situation worse. Choose calm instead of words that add fuel.",
+      "Against the clock. To do something quickly before time runs out. You're in a race with time, so every second matters.",
+      "All ears. Ready and eager to listen. Eager to listen and giving someone your full attention.",
+      "All in the same boat. In the same difficult situation, sharing the same problems or fate. Together we can get through this.",
+      "All over the place. When things are in many different places and not organized. It's harder to find, focus, and get things done.",
+      "All talk and no action. Saying a lot of things but not doing anything. Actions speak louder than words.",
+      "An arm and a leg. When something costs an arm and a leg, it is very, very expensive.",
+      "Apple of one's eye. Someone who is deeply loved and cherished. Very special and adorable to someone.",
+      "As cool as a cucumber. Someone who is very calm and relaxed, no matter what happens. Nothing shakes them easily.",
+      "At the drop of a hat. To do something immediately, without any hesitation or delay. You're ready anytime, anywhere.",
+      "Back against the wall. To be in a situation where you have no easy options left. You must stay calm, think smart, and find a way to break through.",
+      "Back to square one. To start over again from the beginning. Every setback is a setup for a stronger comeback.",
+      "Barking up the wrong tree. To focus on the wrong person or the wrong problem. Don't waste time. Find the real issue.",
+      "Beat around the bush. To avoid saying what you really mean. To talk about many things without getting to the main point. Be clear, be direct.",
+      "Beat someone to the punch. To do something or take action before someone else can. Be ready, be quick, be first.",
+      "Bend over backwards. To try very hard and go to great lengths to help or please someone. Go the extra mile.",
+      "Better late than never. It's good to do something even if you do it later than expected. Progress is better than perfection.",
+      "Between a rock and a hard place. To be in a very difficult situation with no easy choice. Weigh your choices carefully.",
+      "Beyond belief. So unbelievable that it is hard to accept as true. Your mind says, no way.",
+      "Bite off more than you can chew. To attempt to do more than you are capable of handling. Be realistic, plan well, and take one step at a time.",
+      "Bite the bullet. To do something difficult or unpleasant with courage and determination. Courage isn't about avoiding pain, it's about doing what's right.",
+      "Blow off steam. To release built-up anger, stress, or frustration in a healthy way. Everyone needs a healthy way to release pressure.",
+      "Blow the whistle. To tell an authority about a bad, unfair, or illegal situation so it can be stopped. Speak up, be brave, be fair.",
+      "Break a leg. An expression used to wish someone good luck. It's all about encouragement and support.",
+      "Break even. When total income is equal to total expenses, resulting in no profit and no loss. It's a fair and balanced outcome.",
+      "Break the ice. To start a conversation in an uncomfortable or quiet situation to ease tension. A friendly word melts the cold.",
+      "Burn bridges. To do or say things that damage relationships so there's no way to go back. Think before you speak or act.",
+      "Burn the candle at both ends. To work hard for long hours, often sacrificing sleep and rest. Balance is important for long-term success.",
+      "Burn the midnight oil. To work late into the night, putting in extra time and effort. Hard work when no one is watching leads to success.",
+      "By heart. To know or remember something so well that you don't need to look at it. Practice makes memory stronger.",
+      "Call it a day. To stop what you are doing because you have done enough for today. A good ending today leads to a better tomorrow.",
+      "Call the shots. To be the person who makes the decisions and has control of a situation. You take charge and create the outcome.",
+      "Carry the weight. To have important responsibilities and deal with them. Responsibility today, success tomorrow.",
+      "Cash in on. To take advantage of something good or popular in order to make money or gain success. Timing plus action equals big results.",
+      "Catch someone red-handed. To be caught in the act of doing something wrong. Honesty is always the best choice.",
+      "Change of heart. To decide or feel differently about something. To reverse a decision or opinion. It's okay to change your mind.",
+      "Chew the fat. To have a long, friendly conversation about things that are not very important. Enjoy the company, one good chat at a time.",
+      "Clean slate. To start fresh or begin again without past problems, or bad feelings. Every day is a chance for a clean slate.",
+      "Clear the air. To resolve a problem or misunderstanding so that the atmosphere becomes calm and pleasant again. Honesty and communication are key.",
+      "Close but no cigar. Almost successful, but not quite. Not good enough. Effort matters, even if you don't win. Every attempt brings you closer to success.",
+      "Come clean. To admit the truth or confess. To be honest about something you've been hiding.",
+      "Come rain or shine. To be there and do your best, no matter what the weather. Shows reliability and true commitment.",
+      "Cost an arm and a leg. Something is very expensive. It costs a lot. Quality and value sometimes come at a high cost.",
+      "Count one's blessings. To be grateful for the good things in your life instead of focusing on what you don't have. Gratitude turns what we have into enough.",
+      "Cry over spilled milk. Don't waste time feeling sad about something that's already happened and can't be changed. Focus on solutions, not mistakes. Learn, let go, and grow."
+    ];
+
+    const totalPages = imageNames.length;
+
+    // DOM elements
+    const pageContent = document.getElementById('pageContent');
+    const pageIndicator = document.getElementById('pageIndicator');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const jumpInput = document.getElementById('pageJump');
+    const jumpBtn = document.getElementById('jumpBtn');
+
+    let currentPage = 0;
+    let zoomLevel = 1;
+    let panX = 0;
+    let panY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let startPanX = 0;
+    let startPanY = 0;
+    let currentImg = null;
+    let currentWrapper = null;
+    let speechSynth = window.speechSynthesis;
+    let currentUtterance = null;
+    let isPlaying = false;
+    let availableVoices = [];
+    let selectedVoiceName = 'Callum';
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartPanX = 0;
+    let touchStartPanY = 0;
+    let isTouching = false;
+    let touchZoomStart = 0;
+
+    function loadVoices() {
+      return new Promise((resolve) => {
+        if (speechSynth.getVoices().length > 0) {
+          availableVoices = speechSynth.getVoices();
+          resolve(availableVoices);
+        } else {
+          speechSynth.onvoiceschanged = function() {
+            availableVoices = speechSynth.getVoices();
+            resolve(availableVoices);
+          };
+        }
+      });
+    }
+
+    function getPreferredVoice() {
+      let voice = availableVoices.find(v => v.name.toLowerCase().includes('callum'));
+      if (voice) return voice;
+      voice = availableVoices.find(v => 
+        v.lang.startsWith('en') && 
+        (v.name.toLowerCase().includes('male') || 
+         v.name.toLowerCase().includes('neural') ||
+         v.name.toLowerCase().includes('david') ||
+         v.name.toLowerCase().includes('daniel'))
+      );
+      if (voice) return voice;
+      voice = availableVoices.find(v => v.lang.startsWith('en'));
+      if (voice) return voice;
+      return availableVoices[0] || null;
+    }
+
+    function populateVoiceSelector() {
+      const selector = document.getElementById('voiceSelector');
+      if (!selector) return;
+      
+      selector.innerHTML = '';
+      availableVoices.forEach(voice => {
+        const option = document.createElement('option');
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        if (voice.name.toLowerCase().includes('callum')) {
+          option.selected = true;
+          selectedVoiceName = voice.name;
+        }
+        selector.appendChild(option);
+      });
+      
+      if (!selector.querySelector('option[selected]') && availableVoices.length > 0) {
+        selector.selectedIndex = 0;
+        selectedVoiceName = availableVoices[0].name;
+      }
+    }
+
+    function renderPage(index) {
+      if (index < 0) index = 0;
+      if (index >= totalPages) index = totalPages - 1;
+      currentPage = index;
+      
+      stopSpeech();
+
+      zoomLevel = 1;
+      panX = 0;
+      panY = 0;
+      isDragging = false;
+
+      const imgName = imageNames[currentPage] || '';
+      const text = idiomTexts[currentPage] || 'No text available for this idiom.';
+
+      let html = `<div class="image-page">
+                    <div class="image-wrapper" id="imageWrapper">`;
+
+      if (imgName) {
+        html += `<img src="${imgName}" alt="${imgName}" 
+                      id="mainImage"
+                      onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                 <div class="placeholder" style="display:none;">⚠️ image not found<br><span style="font-size:0.9rem;">${imgName}</span></div>`;
+      } else {
+        html += `<div class="placeholder">📷 no image available</div>`;
+      }
+
+      html += `</div>
+               <div class="controls-row">
+                 <button onclick="zoomImage(-0.2)" aria-label="zoom out">➖</button>
+                 <button onclick="resetZoom()" aria-label="reset zoom">⟲</button>
+                 <button onclick="zoomImage(0.2)" aria-label="zoom in">➕</button>
+                 <button class="audio-btn" id="audioBtn" onclick="toggleAudio()">🔊 Read <span class="enter-hint">↵</span></button>
+                 <select class="voice-selector" id="voiceSelector" onchange="changeVoice(this.value)" aria-label="select voice"></select>
+               </div>
+               <div class="zoom-hint">👆 tap to zoom · drag to pan · Space/Enter for audio</div>
+               <div class="reviewer-footer"><span>Reviewer: CSN - Christopher S. Naputo</span></div>
+             </div>`;
+
+      pageContent.innerHTML = html;
+      pageIndicator.textContent = `${currentPage+1} / ${totalPages}`;
+      jumpInput.value = currentPage + 1;
+      
+      currentImg = document.getElementById('mainImage');
+      currentWrapper = document.getElementById('imageWrapper');
+      
+      if (currentImg && currentWrapper) {
+        const newImg = currentImg.cloneNode(true);
+        currentImg.parentNode.replaceChild(newImg, currentImg);
+        currentImg = newImg;
+        
+        currentWrapper.addEventListener('wheel', handleWheel, { passive: false });
+        currentImg.addEventListener('mousedown', startDrag);
+        currentImg.addEventListener('touchstart', handleTouchStart, { passive: false });
+        currentImg.addEventListener('touchmove', handleTouchMove, { passive: false });
+        currentImg.addEventListener('touchend', handleTouchEnd, { passive: false });
+        currentImg.addEventListener('dblclick', resetZoom);
+      }
+      
+      currentText = text;
+      
+      setTimeout(() => {
+        populateVoiceSelector();
+      }, 50);
+      
+      updateTransform();
+    }
+
+    let currentText = '';
+
+    function handleTouchStart(e) {
+      if (!currentImg) return;
+      const touches = e.touches;
+      
+      if (touches.length === 1) {
+        if (zoomLevel > 1) {
+          isTouching = true;
+          touchStartX = touches[0].clientX;
+          touchStartY = touches[0].clientY;
+          touchStartPanX = panX;
+          touchStartPanY = panY;
+        }
+      } else if (touches.length === 2) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        touchZoomStart = Math.sqrt(dx*dx + dy*dy);
+        isTouching = true;
+      }
+      e.preventDefault();
+    }
+
+    function handleTouchMove(e) {
+      if (!currentImg || !isTouching) return;
+      const touches = e.touches;
+      
+      if (touches.length === 1 && zoomLevel > 1) {
+        const dx = touches[0].clientX - touchStartX;
+        const dy = touches[0].clientY - touchStartY;
+        panX = touchStartPanX + dx;
+        panY = touchStartPanY + dy;
+        updateTransform();
+      } else if (touches.length === 2) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        const delta = (distance - touchZoomStart) / 200;
+        zoomLevel = Math.min(Math.max(zoomLevel + delta, 0.3), 4);
+        touchZoomStart = distance;
+        updateTransform();
+      }
+      e.preventDefault();
+    }
+
+    function handleTouchEnd(e) {
+      isTouching = false;
+      if (e.changedTouches.length === 1 && zoomLevel === 1) {
+        zoomLevel = 1.5;
+        updateTransform();
+      }
+    }
+
+    function changeVoice(voiceName) {
+      selectedVoiceName = voiceName;
+      if (isPlaying) {
+        stopSpeech();
+        setTimeout(() => startSpeech(), 100);
+      }
+    }
+
+    function toggleAudio() {
+      const btn = document.getElementById('audioBtn');
+      if (!btn) return;
+      
+      if (isPlaying) {
+        stopSpeech();
+        btn.textContent = '🔊 Read ↵';
+        btn.classList.remove('playing');
+      } else {
+        startSpeech();
+        btn.textContent = '⏹ Stop ↵';
+        btn.classList.add('playing');
+      }
+    }
+
+    function startSpeech() {
+      if (!window.speechSynthesis) {
+        alert('Text-to-speech is not supported in this browser.');
+        return;
+      }
+      
+      stopSpeech();
+      
+      const text = currentText || 'No text available.';
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.lang = 'en-US';
+      currentUtterance.rate = 0.85;
+      currentUtterance.pitch = 1;
+      
+      const voice = availableVoices.find(v => v.name === selectedVoiceName) || getPreferredVoice();
+      if (voice) {
+        currentUtterance.voice = voice;
+      }
+      
+      currentUtterance.onend = function() {
+        isPlaying = false;
+        const btn = document.getElementById('audioBtn');
+        if (btn) {
+          btn.textContent = '🔊 Read ↵';
+          btn.classList.remove('playing');
+        }
+      };
+      
+      currentUtterance.onerror = function() {
+        isPlaying = false;
+        const btn = document.getElementById('audioBtn');
+        if (btn) {
+          btn.textContent = '🔊 Read ↵';
+          btn.classList.remove('playing');
+        }
+      };
+      
+      isPlaying = true;
+      speechSynth.speak(currentUtterance);
+    }
+
+    function stopSpeech() {
+      if (speechSynth) {
+        speechSynth.cancel();
+      }
+      isPlaying = false;
+      currentUtterance = null;
+      const btn = document.getElementById('audioBtn');
+      if (btn) {
+        btn.textContent = '🔊 Read ↵';
+        btn.classList.remove('playing');
+      }
+    }
+
+    function handleWheel(e) {
+      e.preventDefault();
+      if (!currentImg) return;
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      zoomImage(delta);
+    }
+
+    function zoomImage(delta) {
+      if (!currentImg) return;
+      zoomLevel = Math.min(Math.max(zoomLevel + delta, 0.3), 4);
+      updateTransform();
+    }
+
+    function resetZoom() {
+      zoomLevel = 1;
+      panX = 0;
+      panY = 0;
+      updateTransform();
+    }
+
+    function updateTransform() {
+      if (!currentImg) return;
+      const scale = zoomLevel;
+      currentImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+      currentImg.style.transformOrigin = 'center center';
+    }
+
+    function startDrag(e) {
+      if (!currentImg || zoomLevel <= 1) return;
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startPanX = panX;
+      startPanY = panY;
+      currentImg.style.cursor = 'grabbing';
+      document.addEventListener('mousemove', onDrag);
+      document.addEventListener('mouseup', endDrag);
+      e.preventDefault();
+    }
+
+    function onDrag(e) {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      panX = startPanX + dx;
+      panY = startPanY + dy;
+      updateTransform();
+    }
+
+    function endDrag() {
+      isDragging = false;
+      if (currentImg) currentImg.style.cursor = 'grab';
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('mouseup', endDrag);
+    }
+
+    // Expose functions globally
+    window.zoomImage = zoomImage;
+    window.resetZoom = resetZoom;
+    window.toggleAudio = toggleAudio;
+    window.changeVoice = changeVoice;
+
+    function goToPage(num) {
+      let p = parseInt(num, 10);
+      if (isNaN(p)) p = 1;
+      p = Math.min(Math.max(p, 1), totalPages);
+      renderPage(p - 1);
+    }
+
+    // Event listeners
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 0) renderPage(currentPage - 1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages - 1) renderPage(currentPage + 1);
+    });
+
+    jumpBtn.addEventListener('click', () => {
+      goToPage(jumpInput.value);
+    });
+
+    jumpInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        goToPage(jumpInput.value);
+      }
+    });
+
+    // Keyboard shortcuts - including Enter key for audio
+    document.addEventListener('keydown', (e) => {
+      // Ignore if typing in input fields
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      
+      // Navigation
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (currentPage > 0) renderPage(currentPage - 1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (currentPage < totalPages - 1) renderPage(currentPage + 1);
+      } 
+      // Reset zoom + stop audio
+      else if (e.key === 'Escape') {
+        resetZoom();
+        stopSpeech();
+      } 
+      // Zoom controls
+      else if (e.key === '=' || e.key === '+') {
+        e.preventDefault();
+        zoomImage(0.2);
+      } else if (e.key === '-') {
+        e.preventDefault();
+        zoomImage(-0.2);
+      } 
+      // Audio controls: Spacebar OR Enter key
+      else if (e.key === ' ' || e.key === 'Space' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleAudio();
+      }
+    });
+
+    // Load voices and render
+    loadVoices().then(() => {
+      renderPage(0);
+    });
+  })();
+</script>
+</body>
+</html>
