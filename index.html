@@ -751,6 +751,70 @@
       100% { transform: scale(1); opacity: 1; }
     }
 
+    /* ===== MOBILE AUDIO OVERLAY ===== */
+    #audioOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    #audioOverlay.show {
+      display: flex;
+    }
+    #audioOverlay .overlay-content {
+      background: linear-gradient(145deg, #1a3a5a, #0d233d);
+      padding: 40px 30px;
+      border-radius: 32px;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      border: 2px solid #f5d742;
+    }
+    #audioOverlay .overlay-icon {
+      font-size: 4rem;
+      margin-bottom: 15px;
+      display: block;
+    }
+    #audioOverlay h3 {
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+      color: #f5d742;
+    }
+    #audioOverlay p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      line-height: 1.6;
+      color: #e8f0fe;
+    }
+    #audioOverlay .enable-btn {
+      margin-top: 20px;
+      background: #f5d742;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 30px;
+      font-weight: 700;
+      color: #0b1a2f;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 0 #c9a820;
+      touch-action: manipulation;
+    }
+    #audioOverlay .enable-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #c9a820;
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .app-wrapper {
@@ -972,6 +1036,23 @@
         font-size: 0.9rem;
         padding: 2px 14px;
       }
+      #audioOverlay .overlay-content {
+        padding: 30px 20px;
+        margin: 20px;
+      }
+      #audioOverlay .overlay-icon {
+        font-size: 3rem;
+      }
+      #audioOverlay h3 {
+        font-size: 1.1rem;
+      }
+      #audioOverlay p {
+        font-size: 0.85rem;
+      }
+      #audioOverlay .enable-btn {
+        padding: 12px 30px;
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
@@ -1043,6 +1124,16 @@
 
   <div class="footer">
     <span class="rights">CSN - Christopher S. Naputo Reviewer: All Rights Reserved</span>
+  </div>
+</div>
+
+<!-- ===== MOBILE AUDIO OVERLAY ===== -->
+<div id="audioOverlay" class="show">
+  <div class="overlay-content">
+    <span class="overlay-icon">🔊</span>
+    <h3>Tap to Enable Audio</h3>
+    <p>Your browser requires a tap to activate text-to-speech. Tap the button below to enable audio for this app.</p>
+    <button class="enable-btn" onclick="enableAudioAndClose()">🔊 Enable Audio</button>
   </div>
 </div>
 
@@ -1142,6 +1233,7 @@
     const popupScore = document.getElementById('popupScore');
     const popupRating = document.getElementById('popupRating');
     const finishBtn = document.getElementById('finishBtn');
+    const audioOverlay = document.getElementById('audioOverlay');
 
     // Test mode refs
     const questionNumber = document.getElementById('questionNumber');
@@ -1184,6 +1276,64 @@
     let userAnswers = new Array(50).fill(null);
     let examSubmitted = false;
     let examCompleted = false;
+
+    // ===== MOBILE AUDIO FUNCTIONS =====
+    function enableMobileAudio() {
+      try {
+        // Try to resume AudioContext if it exists
+        if (window.AudioContext || window.webkitAudioContext) {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+        }
+        
+        // For iOS, do a silent speech to activate
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+          const dummy = new SpeechSynthesisUtterance(' ');
+          dummy.volume = 0;
+          speechSynth.speak(dummy);
+          setTimeout(() => speechSynth.cancel(), 200);
+        }
+        
+        audioEnabled = true;
+      } catch(e) {
+        console.log('Audio activation error:', e);
+      }
+    }
+
+    window.enableAudioAndClose = function() {
+      enableMobileAudio();
+      if (audioOverlay) {
+        audioOverlay.classList.remove('show');
+        audioOverlay.style.display = 'none';
+      }
+      audioEnabled = true;
+    };
+
+    function checkMobileAudio() {
+      if (isMobile && audioOverlay) {
+        audioOverlay.classList.add('show');
+        audioOverlay.style.display = 'flex';
+        // Try auto-enable after a small delay
+        setTimeout(() => {
+          enableMobileAudio();
+        }, 300);
+      }
+    }
+
+    // Auto-enable audio on any user interaction
+    document.addEventListener('touchstart', function() {
+      if (!audioEnabled) {
+        enableMobileAudio();
+      }
+    }, { passive: true });
+
+    document.addEventListener('click', function() {
+      if (!audioEnabled) {
+        enableMobileAudio();
+      }
+    }, { passive: true });
 
     // ===== PERFORMANCE RATING FUNCTION =====
     function getPerformanceRating(score, total) {
@@ -1263,6 +1413,9 @@
       userName = name;
       welcomeScreen.style.display = 'none';
 
+      // Enable audio on start
+      enableMobileAudio();
+
       if (selectedMode === 'review') {
         reviewContainer.classList.remove('hidden-content');
         reviewContainer.classList.add('active-content');
@@ -1288,7 +1441,7 @@
       }
     });
 
-    // ===== REVIEW MODE (FLIPBOOK) - Simplified =====
+    // ===== REVIEW MODE (FLIPBOOK) =====
     function initReviewMode() {
       const reviewBookContent = document.getElementById('reviewBookContent');
       reviewBookContent.innerHTML = `
@@ -1836,10 +1989,20 @@
         }
       };
 
-      // Review audio
+      // Review audio - FIXED for mobile
       window.reviewToggleAudio = function() {
         const btn = document.getElementById('reviewAudioBtn');
         if (!btn) return;
+        
+        // Ensure audio is enabled
+        if (isMobile && !audioEnabled) {
+          enableMobileAudio();
+          if (audioOverlay) {
+            audioOverlay.classList.add('show');
+            audioOverlay.style.display = 'flex';
+            return;
+          }
+        }
         
         if (isPlaying) {
           reviewStopSpeech();
@@ -1861,7 +2024,16 @@
       };
 
       function reviewStartSpeech() {
-        if (!window.speechSynthesis) return;
+        if (!window.speechSynthesis) {
+          alert('Text-to-speech is not supported in this browser.');
+          return;
+        }
+        
+        // Ensure audio is enabled
+        if (isMobile) {
+          enableMobileAudio();
+        }
+        
         reviewStopSpeech();
         
         const text = currentText || 'No text available.';
@@ -1879,10 +2051,21 @@
           const btn = document.getElementById('reviewAudioBtn');
           if (btn) { btn.textContent = '🔊 Read ↵'; btn.classList.remove('playing'); }
         };
-        currentUtterance.onerror = function() {
+        currentUtterance.onerror = function(event) {
+          console.log('Speech error:', event);
           isPlaying = false;
           const btn = document.getElementById('reviewAudioBtn');
           if (btn) { btn.textContent = '🔊 Read ↵'; btn.classList.remove('playing'); }
+          
+          // If error on mobile, show overlay
+          if (isMobile && (event.error === 'not-allowed' || event.error === 'synthesis-unavailable')) {
+            setTimeout(() => {
+              if (!isPlaying && audioOverlay) {
+                audioOverlay.classList.add('show');
+                audioOverlay.style.display = 'flex';
+              }
+            }, 500);
+          }
         };
         
         isPlaying = true;
@@ -2034,11 +2217,9 @@
       examResultArea.style.display = 'none';
       examSubmitted = false;
       
-      // Always show Submit Answer and Reset buttons
       submitAnswerBtn.style.display = 'inline-flex';
       resetBtn.style.display = 'inline-flex';
       
-      // Add Submit Exam button only on last question
       let submitExamBtn = document.getElementById('submitExamBtn');
       if (index === idioms.length - 1) {
         if (!submitExamBtn) {
@@ -2148,14 +2329,11 @@
     function handleSubmitExam() {
       const { correctCount, wrongCount } = calculateScore();
       
-      // Get performance rating
       const rating = getPerformanceRating(correctCount, idioms.length);
       
-      // Show popup with score and rating
       popupName.textContent = `Hey, ${userName}!`;
       popupScore.textContent = correctCount;
       
-      // Set rating display
       popupRating.textContent = `${rating.icon} ${rating.label}`;
       popupRating.className = `popup-rating ${rating.cssClass}`;
       
@@ -2185,7 +2363,6 @@
         html += `<p style="color:#b6d0e8; font-size:1.1rem; margin-bottom:8px;">👤 Test Taker: <strong style="color:#f5d742;">${userName}</strong></p>`;
       }
       
-      // Performance Rating Display
       const percentage = ((correctCount / idioms.length) * 100).toFixed(1);
       const passed = finalRating.passed;
       
@@ -2202,7 +2379,6 @@
                   <span style="color:#b6d0e8;">📊 Score: ${percentage}%</span>
                 </div>`;
       
-      // Pass/Fail Status
       html += `<div style="text-align:center; margin-bottom:12px;">
                 <span class="pass-status ${passed ? 'passed' : 'failed'}">
                   ${passed ? '✅ PASSED!' : '❌ NOT PASSED'}
@@ -2228,7 +2404,6 @@
       examSubmitted = true;
       analysisPanel.style.display = 'none';
       
-      // Hide Submit Exam button after results
       const submitExamBtn = document.getElementById('submitExamBtn');
       if (submitExamBtn) {
         submitExamBtn.style.display = 'none';
@@ -2271,7 +2446,6 @@
 
     // ===== NAVIGATION =====
     function goToWelcome() {
-      // Reset all data
       userAnswers = new Array(50).fill(null);
       selectedOptionIndex = -1;
       examSubmitted = false;
@@ -2287,13 +2461,11 @@
         submitExamBtn.remove();
       }
       
-      // Hide all content
       reviewContainer.classList.add('hidden-content');
       reviewContainer.classList.remove('active-content');
       testContainer.classList.add('hidden-content');
       testContainer.classList.remove('active-content');
       
-      // Show welcome
       welcomeScreen.style.display = 'block';
       userNameInput.value = '';
       userNameInput.focus();
@@ -2345,6 +2517,9 @@
     loadVoices().then(() => {
       // Voices are ready
     });
+
+    // Check for mobile audio after a short delay
+    setTimeout(checkMobileAudio, 500);
 
     // Show welcome screen initially
     welcomeScreen.style.display = 'block';
