@@ -910,6 +910,11 @@
       cursor: grabbing;
     }
 
+    /* ===== TOUCH DRAG INDICATOR ===== */
+    .image-wrapper.touch-dragging {
+      cursor: grabbing !important;
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .app-wrapper {
@@ -1621,6 +1626,7 @@
             transform-origin: center center;
             -webkit-tap-highlight-color: transparent;
             cursor: grab;
+            touch-action: none;
           }
           .book-inner .image-wrapper img:active {
             cursor: grabbing;
@@ -1987,7 +1993,7 @@
         <div class="book-inner" id="bookInner">
           <div class="image-page" id="imagePage">
             <div class="image-wrapper" id="imageWrapper">
-              <img id="reviewImage" src="" alt="Idiom image" style="max-width:100%; max-height:380px; border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,0.15); border:1px solid #dac8b8; object-fit:contain; background:#f5ede4; cursor:grab;">
+              <img id="reviewImage" src="" alt="Idiom image" style="max-width:100%; max-height:380px; border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,0.15); border:1px solid #dac8b8; object-fit:contain; background:#f5ede4; cursor:grab; touch-action:none;">
               <div class="placeholder" style="display:none;">⚠️ image not found</div>
             </div>
             <div class="review-idiom-number" id="reviewIdiomNumber">📌 Idiom #1: A BLESSING IN DISGUISE</div>
@@ -1999,7 +2005,7 @@
               <select class="voice-selector" id="reviewVoiceSelector" onchange="reviewChangeVoice(this.value)" aria-label="select voice"></select>
               <span class="audio-playing-indicator" id="audioPlayingIndicator">🔊 Playing...</span>
             </div>
-            <div class="zoom-hint">🖱️ scroll to zoom · +/- keys · drag to pan · Space/Enter for audio</div>
+            <div class="zoom-hint">🖱️ scroll to zoom · +/- keys · pinch to zoom · drag to pan · Space/Enter for audio</div>
             <div class="reviewer-footer"><span>Reviewer: CSN - Christopher S. Naputo</span></div>
           </div>
         </div>
@@ -2013,7 +2019,7 @@
           <button class="nav-btn" id="reviewNextBtn">NEXT ▶ <span class="key-hint">→</span></button>
         </div>
         <div class="book-footer-note">
-          <span>✦ 🖱️ scroll to zoom · +/- keys · drag to pan · Space/Enter for audio · ← → navigate ✦</span>
+          <span>✦ 🖱️ scroll to zoom · +/- keys · pinch to zoom · drag to pan · Space/Enter for audio · ← → navigate ✦</span>
         </div>
         <div class="back-to-welcome">
           <button class="btn" id="reviewBackBtn">🔙 Back to Welcome</button>
@@ -2108,6 +2114,74 @@
         document.removeEventListener('mouseup', endDrag);
       }
 
+      // ===== TOUCH EVENTS FOR PINCH ZOOM & DRAG =====
+      function handleTouchStart(e) {
+        if (!currentImg) return;
+        const touches = e.touches;
+        
+        if (touches.length === 1) {
+          // Single touch - start drag if zoomed in
+          if (zoomLevel > 1) {
+            isTouching = true;
+            touchStartX = touches[0].clientX;
+            touchStartY = touches[0].clientY;
+            touchStartPanX = panX;
+            touchStartPanY = panY;
+            currentWrapper.classList.add('touch-dragging');
+          }
+        } else if (touches.length === 2) {
+          // Two touches - pinch zoom
+          const dx = touches[0].clientX - touches[1].clientX;
+          const dy = touches[0].clientY - touches[1].clientY;
+          touchZoomStart = Math.sqrt(dx*dx + dy*dy);
+          isTouching = true;
+          currentWrapper.classList.remove('touch-dragging');
+        }
+        e.preventDefault();
+      }
+
+      function handleTouchMove(e) {
+        if (!currentImg || !isTouching) return;
+        const touches = e.touches;
+        
+        if (touches.length === 1 && zoomLevel > 1) {
+          // Single touch drag
+          const dx = touches[0].clientX - touchStartX;
+          const dy = touches[0].clientY - touchStartY;
+          panX = touchStartPanX + dx;
+          panY = touchStartPanY + dy;
+          currentImg.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+        } else if (touches.length === 2) {
+          // Pinch zoom
+          const dx = touches[0].clientX - touches[1].clientX;
+          const dy = touches[0].clientY - touches[1].clientY;
+          const distance = Math.sqrt(dx*dx + dy*dy);
+          const delta = (distance - touchZoomStart) / 200;
+          zoomLevel = Math.min(Math.max(zoomLevel + delta, 0.3), 4);
+          touchZoomStart = distance;
+          currentImg.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+          if (zoomLevel > 1) {
+            currentImg.classList.add('zoomed');
+          } else {
+            currentImg.classList.remove('zoomed');
+          }
+        }
+        e.preventDefault();
+      }
+
+      function handleTouchEnd(e) {
+        isTouching = false;
+        currentWrapper.classList.remove('touch-dragging');
+        // If zoom is at 1 and user taps (single touch end), zoom in a bit
+        if (e.changedTouches.length === 1 && zoomLevel === 1) {
+          zoomLevel = 1.5;
+          if (currentImg) {
+            currentImg.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+            currentImg.classList.add('zoomed');
+          }
+        }
+      }
+
       function renderReviewPage(index) {
         if (index < 0) index = 0;
         if (index >= idioms.length) index = idioms.length - 1;
@@ -2135,14 +2209,21 @@
           img.style.transformOrigin = 'center center';
           img.classList.remove('zoomed');
           img.style.cursor = 'grab';
+          img.style.touchAction = 'none';
           
-          // Remove old wheel and mouse listeners
+          // Remove old listeners
           img.removeEventListener('wheel', handleWheelZoom);
           img.removeEventListener('mousedown', startDrag);
+          img.removeEventListener('touchstart', handleTouchStart);
+          img.removeEventListener('touchmove', handleTouchMove);
+          img.removeEventListener('touchend', handleTouchEnd);
           
           // Add new listeners
           img.addEventListener('wheel', handleWheelZoom, { passive: false });
           img.addEventListener('mousedown', startDrag);
+          img.addEventListener('touchstart', handleTouchStart, { passive: false });
+          img.addEventListener('touchmove', handleTouchMove, { passive: false });
+          img.addEventListener('touchend', handleTouchEnd, { passive: false });
           
           img.onerror = function() {
             this.style.display = 'none';
